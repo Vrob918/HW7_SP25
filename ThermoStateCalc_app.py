@@ -539,7 +539,7 @@ class thermoState:
     def __sub__(self, other):
         delta = thermoState()
         delta.p=self.p-other.p
-        delta.t=self.t-other.timeData
+        delta.t=self.t-other.t
         delta.h=self.h-other.h
         delta.u=self.u-other.u
         delta.s=self.s-other.s
@@ -563,6 +563,8 @@ class main_window(QWidget,Ui__frm_StateCalculator):
         self._rdo_SI.clicked.connect(self.setUnits)
         self._cmb_Property1.currentIndexChanged.connect(self.setUnits)
         self._cmb_Property2.currentIndexChanged.connect(self.setUnits)
+        self._cmb_S2_Property1.currentIndexChanged.connect(self.setUnits)
+        self._cmb_S2_Property2.currentIndexChanged.connect(self.setUnits)
         self._pb_Calculate.clicked.connect(self.calculateProperties)
 
     def setUnits(self):
@@ -607,7 +609,14 @@ class main_window(QWidget,Ui__frm_StateCalculator):
         SpecifiedProperty1 = self._cmb_Property1.currentText()
         SpecifiedProperty2 = self._cmb_Property2.currentText()
         #read numerical values for selected properties
-        SP=[float(self._le_Property1.text()), float(self._le_Property2.text())]
+        val1_str = self._le_Property1.text().strip()
+        val2_str = self._le_Property2.text().strip()
+        if val1_str == "":
+            val1_str = "100"
+        if val2_str == "":
+            val2_str = "100"
+
+        SP = [float(val1_str), float(val2_str)]
 
         #region set units labels and convert values if needed for state 1
         #region property 1
@@ -665,10 +674,74 @@ class main_window(QWidget,Ui__frm_StateCalculator):
                 SP[1] = SP[1] * UC.ft3perlb_to_m3perkg if SI else SP[1] * UC.m3perkg_to_ft3perlb
         elif 'Quality' in SpecifiedProperty2:
             self._lbl_Property2_Units.setText("")
-        #endregion
-
         self._le_Property1.setText("{:0.3f}".format(SP[0]))
         self._le_Property2.setText("{:0.3f}".format(SP[1]))
+        Spec1_s2 = self._cmb_S2_Property1.currentText()
+        Spec2_s2 = self._cmb_S2_Property2.currentText()
+        val1_s2 = self._le_S2_Property1.text().strip()
+        val2_s2 = self._le_S2_Property2.text().strip()
+
+        if val1_s2 == "":
+            val1_s2 = "100"
+        if val2_s2 == "":
+            val2_s2 = "100"
+
+        SP2 = [float(val1_s2), float(val2_s2)]
+
+        if 'Pressure' in Spec1_s2:
+            self._lbl_S2_Property1_Units.setText(self.p_Units)
+            if UnitChange:
+                SP2[0] = SP2[0] * UC.psi_to_bar if SI else SP2[0] * UC.bar_to_psi
+        elif 'Temperature' in Spec1_s2:
+            self._lbl_S2_Property1_Units.setText(self.t_Units)
+            if UnitChange:
+                SP2[0] = UC.F_to_C(SP2[0]) if SI else UC.C_to_F(SP2[0])
+        elif 'Energy' in Spec1_s2:
+            self._lbl_S2_Property1_Units.setText(self.u_Units)
+            if UnitChange:
+                SP2[0] = SP2[0] * UC.btuperlb_to_kJperkg if SI else SP2[0] * UC.kJperkg_to_btuperlb
+        elif 'Enthalpy' in Spec1_s2:
+            self._lbl_S2_Property1_Units.setText(self.h_Units)
+            if UnitChange:
+                SP2[0] = SP2[0] * UC.btuperlb_to_kJperkg if SI else SP2[0] * UC.kJperkg_to_btuperlb
+        elif 'Entropy' in Spec1_s2:
+            self._lbl_S2_Property1_Units.setText(self.s_Units)
+            if UnitChange:
+                SP2[0] = SP2[0] * UC.btuperlbF_to_kJperkgC if SI else SP2[0] * UC.kJperkgC_to_btuperlbF
+        elif 'Volume' in Spec1_s2:
+            self._lbl_S2_Property1_Units.setText(self.v_Units)
+            if UnitChange:
+                SP2[0] = SP2[0] * UC.ft3perlb_to_m3perkg if SI else SP2[0] * UC.m3perkg_to_ft3perlb
+        elif 'Quality' in Spec1_s2:
+            self._lbl_S2_Property1_Units.setText("")
+        if 'Pressure' in Spec2_s2:
+            self._lbl_S2_Property2_Units.setText(self.p_Units)
+            if UnitChange:
+                SP2[1] = SP2[1] * UC.psi_to_bar if SI else SP2[1] * UC.bar_to_psi
+        elif 'Temperature' in Spec2_s2:
+            self._lbl_S2_Property2_Units.setText(self.t_Units)
+            if UnitChange:
+                SP2[1] = UC.F_to_C(SP2[1]) if SI else UC.C_to_F(SP2[1])
+        elif 'Energy' in Spec2_s2:
+            self._lbl_S2_Property2_Units.setText(self.u_Units)
+            if UnitChange:
+                SP2[1] = SP2[1] * UC.btuperlb_to_kJperkg if SI else SP2[1] * UC.kJperkg_to_btuperlb
+        elif 'Enthalpy' in Spec2_s2:
+            self._lbl_S2_Property2_Units.setText(self.h_Units)
+            if UnitChange:
+                SP2[1] = SP2[1] * UC.btuperlb_to_kJperkg if SI else SP2[1] * UC.kJperkg_to_btuperlb
+        elif 'Entropy' in Spec2_s2:
+            self._lbl_S2_Property2_Units.setText(self.s_Units)
+            if UnitChange:
+                SP2[1] = SP2[1] * UC.btuperlbF_to_kJperkgC if SI else SP2[1] * UC.kJperkgC_to_btuperlbF
+        elif 'Volume' in Spec2_s2:
+            self._lbl_S2_Property2_Units.setText(self.v_Units)
+            if UnitChange:
+                SP2[1] = SP2[1] * UC.ft3perlb_to_m3perkg if SI else SP2[1] * UC.m3perkg_to_ft3perlb
+        elif 'Quality' in Spec2_s2:
+            self._lbl_S2_Property2_Units.setText("")
+        self._le_S2_Property1.setText("{:0.3f}".format(SP2[0]))
+        self._le_S2_Property2.setText("{:0.3f}".format(SP2[1]))
         #endregion
 
     def clamp(self, x, low, high):
@@ -736,7 +809,7 @@ class main_window(QWidget,Ui__frm_StateCalculator):
         :return:
         """
         stDelta="Property change:"
-        stDelta+="\nT2-T1 = {:0.3f} {:}".format(state2.timeData - state1.timeData, self.t_Units)
+        stDelta+="\nT2-T1 = {:0.3f} {:}".format(state2.t - state1.t, self.t_Units)
         stDelta+="\nP2-P1 = {:0.3f} {:}".format(state2.p-state1.p, self.p_Units)
         stDelta+="\nh2-h1 = {:0.3f} {:}".format(state2.h-state1.h, self.h_Units)
         stDelta+="\nu2-u1 = {:0.3f} {:}".format(state2.u-state1.u, self.u_Units)
@@ -762,16 +835,26 @@ class main_window(QWidget,Ui__frm_StateCalculator):
         self.state1 = thermoState()
         self.state2 = thermoState()
 
-        SP=[self._cmb_Property1.currentText()[-2:-1].lower(), self._cmb_Property2.currentText()[-2:-1].lower()]
-        if SP[0]==SP[1]:
+        SP = [self._cmb_Property1.currentText()[-2:-1].lower(),
+              self._cmb_Property2.currentText()[-2:-1].lower()]
+        SP2 = [self._cmb_S2_Property1.currentText()[-2:-1].lower(),
+               self._cmb_S2_Property2.currentText()[-2:-1].lower()]
+        if SP[0] == SP[1]:
             self._lbl_Warning.setText("Warning:  You cannot specify the same property twice.")
         else:
             self._lbl_Warning.setText("")
-
-        f=[float(self._le_Property1.text()),float(self._le_Property2.text())]
-        SI=self._rdo_SI.isChecked()
-        self.state1.setState(SP[0],SP[1],f[0],f[1],SI)
+        if SP2[0] == SP2[1]:
+            self._lbl_Warning_S2.setText("Warning:  You cannot specify the same property twice")
+        else:
+            self._lbl_Warning_S2.setText("")
+        f = [float(self._le_Property1.text()), float(self._le_Property2.text())]
+        f2 = [float(self._le_S2_Property1.text()), float(self._le_S2_Property2.text())]
+        SI = self._rdo_SI.isChecked()
+        self.state1.setState(SP[0], SP[1], f[0], f[1], SI)
+        self.state2.setState(SP2[0], SP2[1], f2[0], f2[1], SI)
         self._lbl_StateProperties.setText(self.makeLabel(self.state1))
+        self._lbl_StateProperties_2.setText(self.makeLabel(self.state2))
+        self._lbl_StateProperties_Diff.setText(self.makeDeltaLabel(self.state1, self.state2))
 
 #endregion
 
